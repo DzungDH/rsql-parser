@@ -37,19 +37,21 @@ public abstract class RSQLOperators {
             GREATER_THAN_OR_EQUAL = new ComparisonOperator("=ge=", ">="),
             LESS_THAN = new ComparisonOperator("=lt=", "<"),
             LESS_THAN_OR_EQUAL = new ComparisonOperator("=le=", "<="),
+            LIKE = new ComparisonOperator("=like="),
             IN = new ComparisonOperator("=in=", true),
             NOT_IN = new ComparisonOperator("=out=", true);
 
     public static final UnaryComparisonOperator
+        IS_EMPTY = new UnaryComparisonOperator("=isempty="),
         IS_NULL = new UnaryComparisonOperator("=isnull="),
-        NOT_NULL = new UnaryComparisonOperator("=notnull=");
+        IS_NOT_NULL = new UnaryComparisonOperator("=notnull=");
 
     public static Set<ComparisonOperator> defaultComparisonOperators() {
         return new HashSet<>(asList(EQUAL, NOT_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL,
-                                    LESS_THAN, LESS_THAN_OR_EQUAL, IN, NOT_IN));
+                                    LESS_THAN, LESS_THAN_OR_EQUAL, LIKE, IN, NOT_IN));
     }
 
     public static Set<UnaryComparisonOperator> defaultUnaryOperator(){
-        return new HashSet<>(asList(IS_NULL, NOT_NULL));
+        return new HashSet<>(asList(IS_EMPTY, IS_NULL, IS_NOT_NULL));
     }
 }

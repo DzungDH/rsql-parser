@@ -32,11 +32,11 @@ import static cz.jirutka.rsql.parser.ast.LogicalOperator.OR
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.EQUAL
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.GREATER_THAN
 import static cz.jirutka.rsql.parser.ast.RSQLOperators.IS_NULL
-import static cz.jirutka.rsql.parser.ast.RSQLOperators.NOT_NULL
+import static cz.jirutka.rsql.parser.ast.RSQLOperators.IS_NOT_NULL
 
 class NodesFactoryTest extends Specification {
 
-    def factory = new NodesFactory([EQUAL, GREATER_THAN] as Set, [IS_NULL, NOT_NULL] as Set)
+    def factory = new NodesFactory([EQUAL, GREATER_THAN] as Set, [IS_NULL, IS_NOT_NULL] as Set)
 
 
     @Unroll
@@ -83,7 +83,7 @@ class NodesFactoryTest extends Specification {
         where:
             opToken       | expected
             '=isnull='    | IS_NULL
-            '=notnull='   | NOT_NULL
+            '=notnull='   | IS_NOT_NULL
     }
 
     def 'throw UnknownOperatorException when given unsupported unary operator token'() {

@@ -266,6 +266,6 @@ class RSQLParserTest extends Specification {
     def or(Node... nodes) { new OrNode(nodes as List) }
     def eq(sel, arg) { new ComparisonNode(EQUAL, sel, [arg as String]) }
     def isnull(sel){ new UnaryComparisonNode(IS_NULL,sel) }
-    def notnull(sel){ new UnaryComparisonNode(NOT_NULL, sel) }
+    def notnull(sel){ new UnaryComparisonNode(IS_NOT_NULL, sel) }
     def out(sel, ...args) { new ComparisonNode(NOT_IN, sel, args as List) }
 }

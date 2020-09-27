@@ -90,8 +90,8 @@ TOKEN : {
 }
 
 TOKEN : {
-    < AND        : ( ";" | " and ") >
-  | < OR         : ( "," | " or " ) >
+    < AND        : ( ";" | " and " | " AND ") >
+  | < OR         : ( "," | " or "  | " OR ") >
   | < LPAREN     : "(" >
   | < RPAREN     : ")" >
   | < COMP_FIQL  :  "==" | "!=" >
@@ -206,7 +206,7 @@ String ComparisonOperator(): {}
 {
     ( token = <COMP_FIQL> | token = <COMP_ALT>)
     {
-        return token.image;
+        return unescape(token.image);
     }
 }
 
@@ -214,7 +214,7 @@ String CustomComparisonOperator():{}
 {
     (token = <COMP_CUST>)
     {
-        return token.image;
+        return unescape(token.image);
     }
 }
 
