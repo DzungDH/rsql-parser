@@ -70,3 +70,21 @@ class OrNodeTest extends LogicalNodeTest {
         new OrNode(children)
     }
 }
+
+class NotNodeTest extends LogicalNodeTest {
+    LogicalNode newNode(List children) {
+        new NotNode(children)
+    }
+}
+
+class AndNotNodeTest extends LogicalNodeTest {
+    LogicalNode newNode(List children) {
+        new AndNotNode(children)
+    }
+}
+
+class OrNotNodeTest extends LogicalNodeTest {
+    LogicalNode newNode(List children) {
+        new OrNotNode(children)
+    }
+}

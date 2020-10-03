@@ -53,7 +53,7 @@ class NoArgRSQLVisitorAdapterTest extends Specification {
         then:
             1 * adapter.visit({ nodeClass.isInstance(it) }) >> null
         where:
-            nodeClass << [AndNode, OrNode, ComparisonNode, UnaryComparisonNode]
+            nodeClass << [AndNode, OrNode, NotNode, AndNotNode, OrNotNode, ComparisonNode, UnaryComparisonNode]
             className = nodeClass.simpleName
     }
 }

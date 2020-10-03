@@ -25,8 +25,11 @@ package cz.jirutka.rsql.parser.ast;
 
 public enum LogicalOperator {
 
-    AND (";"),
-    OR  (",");
+    AND    (";"),
+    OR     (","),
+    NOT    ("!"),
+    ANDNOT (";!"),
+    ORNOT  (",!");
 
     private final String symbol;
 

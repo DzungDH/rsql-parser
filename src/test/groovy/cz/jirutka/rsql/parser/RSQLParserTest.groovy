@@ -185,23 +185,44 @@ class RSQLParserTest extends Specification {
     }
 
 
-    def 'parse logical operator: #op'() {
+    def 'parse logical operator without not: #op'() {
         given:
             def expected = factory.createLogicalNode(op, [eq('sel1', 'arg1'), isnull('sel2')])
         expect:
             parse("sel1==arg1${op.toString()}sel2=isnull=") == expected
         where:
-            op << LogicalOperator.values()
+            opWithNot << LogicalOperator.values()
+            op = opWithNot == LogicalOperator.NOT ? LogicalOperator.AND : opWithNot;
     }
 
-    def 'parse alternative logical operator: "#alt"'() {
+    def 'parse alternative logical operator without not: "#alt"'() {
         given:
             def expected = factory.createLogicalNode(op, [eq('sel1', 'arg1'), isnull('sel2')])
         expect:
             parse("sel1==arg1${alt}sel2=isnull=") == expected
         where:
-            op << LogicalOperator.values()
-            alt = op == LogicalOperator.AND ? ' and ' : ' or ';
+            opWithNot << LogicalOperator.values()
+            op = opWithNot == LogicalOperator.NOT ? LogicalOperator.AND : opWithNot;
+            alt = op == LogicalOperator.AND ? ' and ' : (op == LogicalOperator.OR ? ' or ' : (op == LogicalOperator.NOT ? ' and ' : (op == LogicalOperator.ANDNOT ? ' and not ' : ' or not ')));
+    }
+
+    def 'parse logical operator with not: #op'() {
+        given:
+            def expected = factory.createLogicalNode(op, [eq('sel1', 'arg1')])
+        expect:
+            parse("${op.toString()}sel1==arg1") == expected
+        where:
+            op = LogicalOperator.NOT;
+    }
+
+    def 'parse alternative logical operator with not: "#alt"'() {
+        given:
+            def expected = factory.createLogicalNode(op, [eq('sel1', 'arg1')])
+        expect:
+            parse("${alt}sel1==arg1") == expected
+        where:
+        	op = LogicalOperator.NOT;
+            alt = 'not ';
     }
 
     def 'parse queries with default operators priority: #input'() {
@@ -209,6 +230,9 @@ class RSQLParserTest extends Specification {
             parse(input) == expected
         where:
             input                                    | expected
+            '!s0==a0'                                | not(eq('s0','a0'))
+            's0==a0;s1==a1,!s2==a2'                  | ornot(and(eq('s0','a0'), eq('s1','a1')), eq('s2','a2'))
+            's0==a0;!s1==a1;s2==a2'                  | andnot(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')))
             's0==a0;s1==a1;s2==a2'                   | and(eq('s0','a0'), eq('s1','a1'), eq('s2','a2'))
             's0==a0,s1=out=(a10,a11),s2==a2'         | or(eq('s0','a0'), out('s1','a10', 'a11'), eq('s2','a2'))
             's0==a0,s1==a1;s2==a2,s3==a3'            | or(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')), eq('s3','a3'))
@@ -264,6 +288,9 @@ class RSQLParserTest extends Specification {
 
     def and(Node... nodes) { new AndNode(nodes as List) }
     def or(Node... nodes) { new OrNode(nodes as List) }
+    def not(Node... nodes) { new NotNode(nodes as List) }
+    def andnot(Node... nodes) { new AndNotNode(nodes as List) }
+    def ornot(Node... nodes) { new OrNotNode(nodes as List) }
     def eq(sel, arg) { new ComparisonNode(EQUAL, sel, [arg as String]) }
     def isnull(sel){ new UnaryComparisonNode(IS_NULL,sel) }
     def notnull(sel){ new UnaryComparisonNode(IS_NOT_NULL, sel) }

@@ -67,8 +67,11 @@ public class NodesFactory {
      */
     public LogicalNode createLogicalNode(LogicalOperator operator, List<Node> children) {
         switch (operator) {
-            case AND : return new AndNode(children);
-            case OR  : return new OrNode(children);
+            case AND    : return new AndNode(children);
+            case OR     : return new OrNode(children);
+            case NOT    : return new NotNode(children);
+            case ANDNOT : return new AndNotNode(children);
+            case ORNOT  : return new OrNotNode(children);
 
             // this normally can't happen
             default  : throw new IllegalStateException("Unknown operator: " + operator);

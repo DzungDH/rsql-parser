@@ -1,27 +1,3 @@
-/*
- * The MIT License
- *
- * Copyright 2013-2016 Jakub Jirutka <jakub@jirutka.cz>.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 options {
     LOOKAHEAD = 1;
     CHOICE_AMBIGUITY_CHECK = 3;
@@ -90,8 +66,11 @@ TOKEN : {
 }
 
 TOKEN : {
-    < AND        : ( ";" | " and " | " AND ") >
-  | < OR         : ( "," | " or "  | " OR ") >
+    < ANDNOT     : ( ";!" | " and not " | " AND NOT " ) >
+  | < ORNOT      : ( ",!" | " or not " | " OR NOT " ) >
+  | < AND        : ( ";" | " and " | " AND " ) >
+  | < OR         : ( "," | " or " | " OR " ) >
+  | < NOT        : ( "!" | "not " | "NOT " ) >
   | < LPAREN     : "(" >
   | < RPAREN     : ")" >
   | < COMP_FIQL  :  "==" | "!=" >
@@ -99,15 +78,44 @@ TOKEN : {
   | < COMP_ALT   : ( ">" | "<" ) ( "=" )? >
 }
 
-
 Node Input():
 {
     final Node node;
 }
 {
-    node = Or() <EOF>
+    node = OrNot() <EOF>
     {
         return node;
+    }
+}
+
+Node OrNot():
+{
+    final List<Node> nodes = new ArrayList<Node>(3);
+    Node node;
+}
+{
+    node = AndNot() { nodes.add(node); }
+    (
+        <ORNOT> node = AndNot() { nodes.add(node); }
+    )*
+    {
+        return nodes.size() != 1 ? factory.createLogicalNode(LogicalOperator.ORNOT, nodes) : nodes.get(0);
+    }
+}
+
+Node AndNot():
+{
+    final List<Node> nodes = new ArrayList<Node>(3);
+    Node node;
+}
+{
+    node = Or() { nodes.add(node); }
+    (
+        <ANDNOT> node = Or() { nodes.add(node); }
+    )*
+    {
+        return nodes.size() != 1 ? factory.createLogicalNode(LogicalOperator.ANDNOT, nodes) : nodes.get(0);
     }
 }
 
@@ -146,9 +154,21 @@ Node Constraint():
     final Node node;
 }
 {
-    ( node = Group() | node = Comparison())
+    ( node = Not() | node = Group() | node = Comparison())
     {
         return node;
+    }
+}
+
+Node Not():
+{
+    final List<Node> nodes = new ArrayList<Node>(3);
+    Node node;
+}
+{
+    <NOT> node = Constraint() { nodes.add(node); }
+    {
+        return factory.createLogicalNode(LogicalOperator.NOT, nodes);
     }
 }
 
