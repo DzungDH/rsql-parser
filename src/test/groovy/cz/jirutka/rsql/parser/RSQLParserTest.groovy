@@ -231,12 +231,12 @@ class RSQLParserTest extends Specification {
         where:
             input                                    | expected
             '!s0==a0'                                | not(eq('s0','a0'))
-            's0==a0;s1==a1,!s2==a2'                  | ornot(and(eq('s0','a0'), eq('s1','a1')), eq('s2','a2'))
-            's0==a0;!s1==a1;s2==a2'                  | andnot(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')))
-            's0==a0;s1==a1;s2==a2'                   | and(eq('s0','a0'), eq('s1','a1'), eq('s2','a2'))
-            's0==a0,s1=out=(a10,a11),s2==a2'         | or(eq('s0','a0'), out('s1','a10', 'a11'), eq('s2','a2'))
-            's0==a0,s1==a1;s2==a2,s3==a3'            | or(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')), eq('s3','a3'))
-            's0=notnull=,s1=isnull=;s2=notnull='     | or(notnull('s0'), and(isnull('s1'), notnull('s2')))
+            's0==a0,s1==a1;!s2==a2'                  | ornot(and(eq('s0','a0'), eq('s1','a1')), eq('s2','a2'))
+            's0==a0,!s1==a1,s2==a2'                  | andnot(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')))
+            's0==a0,s1==a1,s2==a2'                   | and(eq('s0','a0'), eq('s1','a1'), eq('s2','a2'))
+            's0==a0;s1=out=(a10,a11);s2==a2'         | or(eq('s0','a0'), out('s1','a10', 'a11'), eq('s2','a2'))
+            's0==a0;s1==a1,s2==a2;s3==a3'            | or(eq('s0','a0'), and(eq('s1','a1'), eq('s2','a2')), eq('s3','a3'))
+            's0=notnull=;s1=isnull=,s2=notnull='     | or(notnull('s0'), and(isnull('s1'), notnull('s2')))
     }
 
     def 'parse queries with parenthesis: #input'() {
@@ -244,14 +244,14 @@ class RSQLParserTest extends Specification {
             parse(input) == expected
         where:
             input                                            | expected
-            '(s0==a0,s1==a1);s2==a2'                         | and(or(eq('s0','a0'), eq('s1','a1')), eq('s2','a2'))
-            '(s0==a0,s1=out=(a10,a11));s2==a2,s3==a3'        | or(and(or(eq('s0','a0'), out('s1','a10', 'a11')), eq('s2','a2')), eq('s3','a3'))
-            '((s0==a0,s1==a1);s2==a2,s3==a3);s4==a4'         | and(or(and(or(eq('s0','a0'), eq('s1','a1')), eq('s2','a2')), eq('s3','a3')), eq('s4','a4'))
-            '((s0==a0,s1=isnull=);s2==a2,s3=isnull=);s4==a4' | and(or(and(or(eq('s0','a0'), isnull('s1')), eq('s2','a2')), isnull('s3')), eq('s4','a4'))
+            '(s0==a0;s1==a1),s2==a2'                         | and(or(eq('s0','a0'), eq('s1','a1')), eq('s2','a2'))
+            '(s0==a0;s1=out=(a10,a11)),s2==a2;s3==a3'        | or(and(or(eq('s0','a0'), out('s1','a10', 'a11')), eq('s2','a2')), eq('s3','a3'))
+            '((s0==a0;s1==a1),s2==a2;s3==a3),s4==a4'         | and(or(and(or(eq('s0','a0'), eq('s1','a1')), eq('s2','a2')), eq('s3','a3')), eq('s4','a4'))
+            '((s0==a0;s1=isnull=),s2==a2;s3=isnull=),s4==a4' | and(or(and(or(eq('s0','a0'), isnull('s1')), eq('s2','a2')), isnull('s3')), eq('s4','a4'))
             '(s0==a0)'                                       | eq('s0', 'a0')
-            '((s0==a0));s1==a1'                              | and(eq('s0', 'a0'), eq('s1','a1'))
-            '((s0==a0));s1=isnull='                          | and(eq('s0', 'a0'), isnull('s1'))
-            '((s0==a0),s1=notnull=);s2=isnull='              | and(or(eq('s0','a0'), notnull('s1')), isnull('s2'))
+            '((s0==a0)),s1==a1'                              | and(eq('s0', 'a0'), eq('s1','a1'))
+            '((s0==a0)),s1=isnull='                          | and(eq('s0', 'a0'), isnull('s1'))
+            '((s0==a0);s1=notnull=),s2=isnull='              | and(or(eq('s0','a0'), notnull('s1')), isnull('s2'))
     }
 
     def 'throw exception for unclosed parenthesis: #input'() {
@@ -260,7 +260,7 @@ class RSQLParserTest extends Specification {
         then:
             thrown RSQLParserException
         where:
-            input << [ '(s0==a0;s1!=a1', 's0==a0)', 's0==a;(s1=in=(b,c),s2!=d', "(s0=isnull=;s0==a0", "(s0=notnull=;s0==a0" ]
+            input << [ '(s0==a0,s1!=a1', 's0==a0)', 's0==a,(s1=in=(b,c);s2!=d', "(s0=isnull=,s0==a0", "(s0=notnull=,s0==a0" ]
     }
 
 
@@ -272,7 +272,7 @@ class RSQLParserTest extends Specification {
             def expected = and(eq('name', 'TRON'), new ComparisonNode(allOperator, 'genres', ['sci-fi', 'thriller']))
 
         expect:
-            parser.parse('name==TRON;genres=all=(sci-fi,thriller)') == expected
+            parser.parse('name==TRON,genres=all=(sci-fi,thriller)') == expected
 
         when: 'unsupported operator used'
             parser.parse('name==TRON;year=ge=2010')

@@ -39,10 +39,10 @@ class NodesTest extends Specification {
         where:
             input                            | output
             'genres=in=(sci-fi,action)'      | "genres=in=('sci-fi','action')"
-            'name=="Kill Bill";year=gt=2003' | "(name=='Kill Bill';year=gt='2003')"
-            'a<=1;b!=2;c>3'                  | "(a=le='1';b!='2';c=gt='3')"
-            'a=gt=1,b==2;c!=3,d=lt=4'        | "(a=gt='1',(b=='2';c!='3'),d=lt='4')"
-            'a=isnull=;b==2,c!=4'             | "((a=isnull=;b=='2'),c!='4')"
+            'name=="Kill Bill",year=gt=2003' | "(name=='Kill Bill',year=gt='2003')"
+            'a<=1,b!=2,c>3'                  | "(a=le='1',b!='2',c=gt='3')"
+            'a=gt=1;b==2,c!=3;d=lt=4'        | "(a=gt='1';(b=='2',c!='3');d=lt='4')"
+            'a=isnull=,b==2;c!=4'             | "((a=isnull=,b=='2');c!='4')"
     }
 
     def 'nodes should accept visitor'() {

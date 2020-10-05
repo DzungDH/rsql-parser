@@ -66,14 +66,14 @@ TOKEN : {
 }
 
 TOKEN : {
-    < ANDNOT     : ( ";!" | " and not " | " AND NOT " ) >
-  | < ORNOT      : ( ",!" | " or not " | " OR NOT " ) >
-  | < AND        : ( ";" | " and " | " AND " ) >
-  | < OR         : ( "," | " or " | " OR " ) >
+    < ANDNOT     : ( ",!" | " and not " | " AND NOT " ) >
+  | < ORNOT      : ( ";!" | " or not " | " OR NOT " ) >
+  | < AND        : ( "," | " and " | " AND " ) >
+  | < OR         : ( ";" | " or " | " OR " ) >
   | < NOT        : ( "!" | "not " | "NOT " ) >
   | < LPAREN     : "(" >
   | < RPAREN     : ")" >
-  | < COMP_FIQL  :  "==" | "!=" >
+  | < COMP_FIQL  :  "==" | "!=" | "=" | "!~" | "~" >
   | < COMP_CUST  : "=" (<ALPHA>)* "=" >
   | < COMP_ALT   : ( ">" | "<" ) ( "=" )? >
 }
@@ -269,7 +269,7 @@ List<String> CommaSepArguments():
 {
     arg = Argument() { list.add(arg); }
     (
-        <OR>
+        <AND>
         arg = Argument() { list.add(arg); }
     )*
     {
